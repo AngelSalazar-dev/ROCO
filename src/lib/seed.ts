@@ -3,14 +3,20 @@ import bcrypt from "bcryptjs";
 const uid = () => crypto.randomUUID();
 
 async function seed() {
-  const existing = await query<any>("SELECT id FROM Profile WHERE email = ?", ["admin@roco.app"]);
-  if (existing.length === 0) {
-    const hash = await bcrypt.hash("admin123", 12);
-    await query(
-      "INSERT INTO Profile (id, email, password, role) VALUES (?, ?, ?, 'admin')",
-      [uid(), "admin@roco.app", hash]
-    );
-    console.log("Admin created: admin@roco.app / admin123");
+  const admins = [
+    { email: "admin@roco.app", pass: "admin123" },
+    { email: "angeluqui2017@gmail.com", pass: "12345678" },
+  ];
+  for (const a of admins) {
+    const existing = await query<any>("SELECT id FROM Profile WHERE email = ?", [a.email]);
+    if (existing.length === 0) {
+      const hash = await bcrypt.hash(a.pass, 12);
+      await query(
+        "INSERT INTO Profile (id, email, password, role) VALUES (?, ?, ?, 'admin')",
+        [uid(), a.email, hash]
+      );
+      console.log(`Admin created: ${a.email}`);
+    }
   }
 
   const count = await query<any>("SELECT COUNT(*) as c FROM GrupoAseo");

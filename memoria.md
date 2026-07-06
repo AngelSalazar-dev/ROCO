@@ -1,91 +1,150 @@
 # ROCO - Roles de Congregación
 
 ## Descripción
-Aplicación web privada en un solo archivo HTML para la gestión automatizada de roles en una congregación. Diseño minimalista, elegante y limpio.
+Aplicación web privada para la gestión automatizada de roles en una congregación. Diseño minimalista, elegante y limpio.
 
 ## Stack Tecnológico
-- **Frontend**: HTML + CSS + JavaScript (Vanilla)
-- **Estilos**: CSS puro con diseño minimalista, fuente Inter
-- **Almacenamiento**: localStorage (navegador)
-- **Autenticación**: SHA-256 (Web Crypto API)
+- **Frontend/Backend**: Next.js 15 (App Router) + TypeScript
+- **Estilos**: Tailwind CSS v3 + fuente Inter
+- **Base de Datos**: TiDB Cloud (MySQL-compatible) vía mysql2
+- **Autenticación**: JWT + bcryptjs (httpOnly cookie)
+- **Deploy**: Vercel
+
+## Repositorio
+https://github.com/AngelSalazar-dev/ROCO
 
 ## Archivos del Proyecto
-- `index.html` — Aplicación completa (1230+ líneas)
-- `memoria.md` — Este documento
 
-## Cómo Usar
-1. Abrir `index.html` en cualquier navegador moderno
-2. En la primera ejecución, configurar correo y contraseña de administrador
-3. Se crean automáticamente 10 grupos de aseo (Grupo 1...Grupo 10)
-4. Agregar encargados de audio y video desde el panel Admin
-5. El sistema genera automáticamente las asignaciones semanales
+```
+ROCO/
+├── src/
+│   ├── app/
+│   │   ├── page.tsx              # Dashboard (semana actual, próxima, calendario)
+│   │   ├── login/page.tsx        # Login
+│   │   ├── admin/page.tsx        # Admin (CRUD grupos, CRUD AV, pausa)
+│   │   ├── historial/page.tsx    # Historial consultable
+│   │   ├── layout.tsx            # Root layout con Inter
+│   │   ├── globals.css           # Tailwind + animaciones
+│   │   └── api/
+│   │       ├── auth/login/route.ts
+│   │       ├── auth/logout/route.ts
+│   │       ├── auth/me/route.ts
+│   │       ├── grupos-aseo/route.ts
+│   │       ├── encargados-av/route.ts
+│   │       ├── rotacion/route.ts       # GET: genera + retorna todo
+│   │       ├── rotacion/pausa/route.ts # POST: toggle asamblea
+│   │       └── rotacion/completar/route.ts # POST: auto-completar
+│   ├── components/
+│   │   ├── layout/Header.tsx
+│   │   ├── dashboard/CurrentWeek.tsx
+│   │   ├── dashboard/MeetingRow.tsx
+│   │   └── dashboard/WeekCalendar.tsx
+│   ├── lib/
+│   │   ├── db.ts                 # mysql2 pool + migrate()
+│   │   ├── auth.ts               # JWT + bcrypt + session helpers
+│   │   ├── rotation.ts           # Algoritmo de rotación
+│   │   ├── dates.ts              # getMonday, addDays, formatDate, parseDate
+│   │   ├── migrate.ts            # Script para crear tablas
+│   │   └── seed.ts               # Script para datos iniciales
+│   ├── middleware.ts             # Protege /admin y /historial
+│   └── types/index.ts
+├── index.html                    # Versión standalone (legacy)
+├── .env.example
+├── .gitignore
+├── tailwind.config.ts
+├── next.config.ts
+├── tsconfig.json
+├── package.json
+└── postcss.config.mjs
+```
 
-## Funcionalidades
+## Base de Datos (TiDB)
 
-### Autenticación
-- Configuración inicial única con correo y contraseña
-- Inicio de sesión con verificación SHA-256
-- Sesión persistente en localStorage
-- Cierre de sesión manual
+### Conexión
+```
+DATABASE_URL="mysql://user:pass@gateway01.us-east-1.prod.aws.tidbcloud.com:4000/test"
+```
 
-### Dashboard (Inicio)
-- **Semana Actual**: Tarjeta destacada con borde azul. Muestra asignaciones de Jueves y Domingo. Si hoy es día de reunión, badge "HOY". Si es semana de asamblea, banner gris con icono de pausa.
-- **Próxima Semana**: Tarjeta secundaria con la misma estructura.
-- **Calendario**: Vista de 9 semanas (2 pasadas + actual + 6 futuras). Las semanas pasadas se atenúan. La actual se resalta.
+### Tablas
+- **Profile**: id, email (unique), password (bcrypt), role ('admin'|'viewer')
+- **GrupoAseo**: id, nombre, activo, orden
+- **EncargadoAV**: id, nombre, activo, orden
+- **HistorialRol**: id, fechaInicioSemana + tipoReunion (unique), grupoAseo1Id, grupoAseo2Id, encargadoAvId, esPausaAsamblea, completado
 
-### Admin
-- **Grupos de Aseo**: CRUD con edición inline, toggle activo/inactivo, borrado lógico, orden numérico.
-- **Audio y Video**: CRUD con edición inline, toggle activo/inactivo, borrado lógico, orden numérico.
-- **Pausa por Asamblea**: Toggle por semana para marcar como "Semana de Asamblea". Las semanas con pausa no asignan roles y la rotación se reanuda exactamente donde quedó.
-
-### Historial
-- Lista de todas las semanas pasadas ordenadas descendente
-- Muestra asignaciones de Jueves y Domingo
-- Badge verde "✓" para reuniones completadas
-- Semanas de asamblea mostradas con fondo gris
+### Seed Data
+- Admin: admin@roco.app / admin123 (role: admin)
+- 10 grupos: Grupo 1, Grupo 2... Grupo 10 (todos activos)
+- Encargados AV: vacío (admin los agrega)
 
 ## Lógica de Rotación
 
 ### Aseo (1 par por reunión = 2 pares/semana)
-- 10 grupos se rotan circularmente: `rotateLeft(grupos, effectiveIdx % total)`
-- Jueves: grupos en índices [0,1] del array rotado
-- Domingo: grupos en índices [2,3] del array rotado
-- Semana de asamblea: no consume pares, índices congelados
-- Cada grupo trabaja aprox. 1 vez cada 2.5 semanas
+- `rotateLeft(grupos, effectiveIdx % total)` 
+- Jueves: índices [0,1], Domingo: índices [2,3]
+- Asamblea: no consume pares, índices congelados
 
 ### Audio/Video (1 persona por semana)
-- `encargado = activos[effectiveIdx % totalActivos]`
-- Una persona cubre ambas reuniones (Jueves + Domingo) de la semana
-- Semana de asamblea: no avanza el índice
+- `encargados[effectiveIdx % total]`
+- Cubre ambas reuniones de la semana
+- Asamblea: no avanza el índice
 
 ### Effective Index
-- `effectiveIdx` = cantidad de semanas NO-pausa desde el inicio hasta la semana objetivo
-- Las semanas de asamblea se saltan en el conteo
-- Esto asegura que la rotación se reanude exactamente donde quedó
+- Contador de semanas NO-pausa desde el inicio
+- Una semana de asamblea se salta en el conteo
+- La rotación se reanuda exactamente donde quedó
 
 ### Auto-Completado
-- Al cargar la app, se comparan las fechas de reunión con la fecha actual
-- Reuniones con fecha anterior al día actual se marcan como `completado = true`
-- Visualmente se muestra un check verde "✓"
+- Al cargar el dashboard, se marcan como completadas las reuniones con fecha anterior a hoy
+- Visualmente: check verde "✓"
 
 ## Diseño UI/UX
-- **Paleta**: Fondo #fafaf9, texto #1e293b, acento azul marino #1e3a5f, grises #94a3b8/#64748b
-- **Tipografía**: Inter (Google Fonts), pesos 400/500/600/700
-- **Cards**: Bordes redondeados (12px), bordes sutiles #e2e8f0, sombras ligeras
-- **Header sticky**: Logo ROCO + navegación + info de usuario + botón Salir
-- **Transiciones**: Fade-in (0.25s) y slide-up (0.3s) en cambios de vista
-- **Responsive**: Adaptable a móviles (media query 640px)
+- **Paleta**: Fondo #fafaf9, texto #1e293b, acento #1e3a5f, grises #94a3b8
+- **Tipografía**: Inter (Google Fonts)
+- **Componentes**: Cards con bordes redondeados, header sticky, transiciones suaves
+- **Responsive**: Adaptable a móviles
+
+## Para Desarrollo Local
+
+```bash
+# Instalar dependencias
+npm install
+
+# Copiar y configurar variables de entorno
+cp .env.example .env.local
+# Editar DATABASE_URL y JWT_SECRET
+
+# Migrar base de datos
+npx tsx src/lib/migrate.ts
+
+# Sembrar datos iniciales
+npx tsx src/lib/seed.ts
+
+# Iniciar servidor de desarrollo
+npm run dev
+```
+
+## Para Producción (Vercel)
+
+1. Conectar repositorio a Vercel
+2. Configurar variables de entorno:
+   - `DATABASE_URL`: string de conexión a TiDB
+   - `JWT_SECRET`: secreto para firmar tokens
+   - `NODE_TLS_REJECT_UNAUTHORIZED`: 0 (para SSL de TiDB)
+3. Desplegar
+4. Una vez desplegado, ejecutar migración y seed desde terminal de Vercel o localmente
 
 ## Historial de Cambios
 
-### v1.0 — Versión Inicial
-- Aplicación completa en un solo archivo HTML
-- Sistema de autenticación con SHA-256
-- CRUD completo de grupos de aseo y encargados AV
-- Algoritmo de rotación circular para aseo (pares alternantes)
-- Algoritmo de rotación secuencial para AV
-- Dashboard con semana actual, próxima y calendario
+### v1.0 — Primer commit
+- Proyecto Next.js con App Router + TypeScript + Tailwind
+- Conexión a TiDB Cloud vía mysql2
+- Sistema de autenticación JWT + bcryptjs
+- API CRUD para grupos de aseo y encargados AV
+- Algoritmo de rotación circular para aseo, secuencial para AV
+- Dashboard con semana actual, próxima semana y calendario
 - Auto-completado de semanas pasadas
 - Pausa por asamblea con congelamiento de índices
-- Historial consultable de semanas pasadas
-- Diseño minimalista con Inter y paleta azul marino
+- Panel admin con tabs y CRUD inline
+- Historial consultable
+- Middleware de protección de rutas
+- Versión standalone HTML (index.html) como respaldo

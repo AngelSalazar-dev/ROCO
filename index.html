@@ -462,10 +462,19 @@ async function setupAdmin(email, password) {
 
 async function checkLogin(email, password) {
   const admin = LS.get('admin', null);
-  if (!admin) return false;
-  if (admin.email !== email) return false;
-  const hash = await hashStr(password);
-  return hash === admin.passwordHash;
+  if (admin && admin.email === email) {
+    const hash = await hashStr(password);
+    if (hash === admin.passwordHash) return true;
+  }
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    if (res.ok) return true;
+  } catch {}
+  return false;
 }
 
 // --- Rendering ---

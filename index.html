@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROCO — Roles de Congregación</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', system-ui, sans-serif; background: #fafaf9; color: #1e293b; min-height: 100vh; }
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; font-family: inherit; }
+input, select { font-family: inherit; }
+
+.fade-in { animation: fadeIn 0.25s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+.slide-up { animation: slideUp 0.3s ease; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Layout */
+.app-header { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 24px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+.app-header .logo { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; color: #1e3a5f; }
+.app-header nav { display: flex; gap: 24px; align-items: center; }
+.app-header nav a { font-size: 14px; font-weight: 500; color: #64748b; transition: color 0.2s; padding: 4px 0; border-bottom: 2px solid transparent; }
+.app-header nav a:hover, .app-header nav a.active { color: #1e3a5f; border-bottom-color: #1e3a5b; }
+.app-header .user-info { display: flex; align-items: center; gap: 12px; font-size: 13px; color: #64748b; }
+.app-header .btn-logout { font-size: 13px; color: #64748b; background: none; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 12px; transition: all 0.2s; }
+.app-header .btn-logout:hover { background: #f1f5f9; color: #ef4444; border-color: #ef4444; }
+
+.main { max-width: 960px; margin: 0 auto; padding: 32px 24px; }
+
+/* Cards */
+.card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; transition: box-shadow 0.2s; }
+.card:hover { box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+.card-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: #94a3b8; margin-bottom: 12px; }
+.card-highlight { border-left: 3px solid #1e3a5f; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 14px; font-weight: 500; padding: 8px 16px; border-radius: 8px; border: 1px solid transparent; transition: all 0.2s; }
+.btn-primary { background: #1e3a5f; color: #fff; border-color: #1e3a5f; }
+.btn-primary:hover { background: #152d4a; }
+.btn-secondary { background: #fff; color: #1e293b; border-color: #e2e8f0; }
+.btn-secondary:hover { background: #f8fafc; }
+.btn-danger { color: #ef4444; border-color: #fecaca; background: #fff; }
+.btn-danger:hover { background: #fef2f2; }
+.btn-sm { font-size: 13px; padding: 4px 10px; border-radius: 6px; }
+.btn-icon { background: none; border: none; color: #94a3b8; padding: 4px; border-radius: 4px; transition: color 0.2s; }
+.btn-icon:hover { color: #1e293b; }
+
+/* Forms */
+.input { width: 100%; padding: 10px 14px; font-size: 14px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; transition: border-color 0.2s; outline: none; }
+.input:focus { border-color: #1e3a5f; box-shadow: 0 0 0 3px rgba(30,58,95,0.08); }
+.label { display: block; font-size: 13px; font-weight: 500; color: #475569; margin-bottom: 4px; }
+
+/* Login */
+.login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #fafaf9; padding: 24px; }
+.login-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 40px; width: 100%; max-width: 380px; box-shadow: 0 4px 24px rgba(0,0,0,0.04); }
+.login-card .logo-lg { font-size: 28px; font-weight: 700; color: #1e3a5f; text-align: center; margin-bottom: 4px; letter-spacing: 1px; }
+.login-card .subtitle { font-size: 13px; color: #94a3b8; text-align: center; margin-bottom: 28px; }
+.login-card .error-msg { font-size: 13px; color: #ef4444; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 8px 12px; margin-bottom: 16px; display: none; }
+
+/* Badge */
+.badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; padding: 2px 8px; border-radius: 4px; }
+.badge-green { background: #f0fdf4; color: #16a34a; }
+.badge-gray { background: #f1f5f9; color: #64748b; }
+.badge-blue { background: #eff6ff; color: #1e3a5f; }
+.badge-orange { background: #fff7ed; color: #ea580c; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; padding: 8px 12px; border-bottom: 1px solid #e2e8f0; }
+td { font-size: 14px; padding: 10px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+
+/* Pause card */
+.pause-banner { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px 24px; display: flex; align-items: center; gap: 12px; }
+.pause-banner svg { color: #94a3b8; flex-shrink: 0; }
+.pause-banner .pause-text { font-size: 15px; font-weight: 500; color: #64748b; }
+.pause-banner .pause-sub { font-size: 13px; color: #94a3b8; }
+
+/* Week cards */
+.week-grid { display: grid; gap: 12px; }
+.week-row { display: flex; align-items: center; gap: 16px; padding: 14px 16px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; transition: all 0.2s; }
+.week-row.paused { background: #f8fafc; }
+.week-row.completed { opacity: 0.75; }
+.week-row .week-date { min-width: 140px; font-size: 13px; font-weight: 500; color: #475569; }
+.week-row .week-day { font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.4px; min-width: 64px; }
+.week-row .week-assignment { flex: 1; font-size: 14px; color: #1e293b; }
+.week-row .week-assignment .empty { color: #94a3b8; font-style: italic; }
+.week-row .week-check { color: #22c55e; font-size: 16px; min-width: 24px; text-align: center; }
+.week-row .week-today { background: #f0f7ff; border-color: #bdd3eb; }
+.badge-today { font-size: 11px; font-weight: 600; color: #1e3a5f; background: #dbeafe; padding: 2px 8px; border-radius: 4px; }
+
+/* Tab nav */
+.tab-nav { display: flex; gap: 0; border-bottom: 1px solid #e2e8f0; margin-bottom: 24px; }
+.tab-nav button { font-size: 14px; font-weight: 500; padding: 10px 20px; background: none; border: none; border-bottom: 2px solid transparent; color: #94a3b8; transition: all 0.2s; }
+.tab-nav button:hover { color: #64748b; }
+.tab-nav button.active { color: #1e3a5f; border-bottom-color: #1e3a5f; }
+
+/* Setup */
+.setup-card { max-width: 480px; margin: 40px auto; }
+
+/* Checkbox toggle */
+.toggle { position: relative; display: inline-block; width: 36px; height: 20px; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle .slider { position: absolute; cursor: pointer; inset: 0; background: #e2e8f0; border-radius: 20px; transition: 0.2s; }
+.toggle .slider::before { content: ''; position: absolute; height: 16px; width: 16px; left: 2px; bottom: 2px; background: #fff; border-radius: 50%; transition: 0.2s; }
+.toggle input:checked + .slider { background: #1e3a5f; }
+.toggle input:checked + .slider::before { transform: translateX(16px); }
+
+/* Modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.modal { background: #fff; border-radius: 16px; padding: 32px; width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.12); }
+.modal h3 { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+.modal .btn-row { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+
+/* Responsive */
+@media (max-width: 640px) {
+  .app-header { padding: 0 16px; }
+  .main { padding: 20px 16px; }
+  .week-row { flex-wrap: wrap; gap: 8px; }
+  .week-row .week-date { min-width: auto; }
+  .login-card { padding: 24px; }
+}
+
+.hidden { display: none !important; }
+.mt-4 { margin-top: 16px; }
+.mt-6 { margin-top: 24px; }
+.mt-8 { margin-top: 32px; }
+.mb-4 { margin-bottom: 16px; }
+.mb-6 { margin-bottom: 24px; }
+.flex { display: flex; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.gap-4 { gap: 16px; }
+.text-sm { font-size: 13px; }
+.text-xs { font-size: 12px; }
+.text-muted { color: #94a3b8; }
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.w-full { width: 100%; }
+.ml-2 { margin-left: 8px; }
+.ml-auto { margin-left: auto; }
+.today-highlight { background: #f0f7ff; border-radius: 8px; padding: 4px 8px; margin: 0 -8px; }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+// ===========================
+// ROCO — Roles de Congregación
+// ===========================
+
+// --- Helpers ---
+const uid = () => crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+function getMonday(d) {
+  d = new Date(d);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  d.setDate(diff);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function addDays(d, n) { const r = new Date(d); r.setDate(r.getDate() + n); return r; }
+function formatDate(d) { return d.toISOString().slice(0, 10); }
+function parseDate(s) { const [y,m,d]=s.split('-'); return new Date(+y,+m-1,+d); }
+function shortDate(s) { const d = parseDate(s); return d.toLocaleDateString('es', { day: 'numeric', month: 'short' }); }
+function longDate(s) { const d = parseDate(s); return d.toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' }); }
+
+function dayName(s) {
+  const days = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  return days[parseDate(s).getDay()];
+}
+
+const TODAY = formatDate(new Date());
+
+// --- Storage ---
+const LS = {
+  init() {
+    if (!localStorage.getItem('roco_initialized')) return false;
+    return true;
+  },
+  get(k, def) {
+    try { const v = JSON.parse(localStorage.getItem('roco_' + k)); return v !== null ? v : def; }
+    catch { return def; }
+  },
+  set(k, v) { localStorage.setItem('roco_' + k, JSON.stringify(v)); },
+  remove(k) { localStorage.removeItem('roco_' + k); }
+};
+
+// --- State ---
+let state = {
+  view: 'login',
+  user: null,
+  grupos: [],
+  encargados: [],
+  historial: [],
+  tab: 'grupos'
+};
+
+function saveSession(user) {
+  LS.set('session', { email: user.email, name: user.name, timestamp: Date.now() });
+  state.user = user;
+}
+
+function clearSession() { LS.remove('session'); state.user = null; }
+
+function loadSession() { return LS.get('session', null); }
+
+// --- Crypto ---
+async function hashStr(str) {
+  const enc = new TextEncoder().encode(str);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// --- Data ---
+function loadData() {
+  state.grupos = LS.get('grupos', []);
+  state.encargados = LS.get('encargados', []);
+  state.historial = LS.get('historial', []);
+}
+
+function saveGrupos() { LS.set('grupos', state.grupos); }
+function saveEncargados() { LS.set('encargados', state.encargados); }
+function saveHistorial() { LS.set('historial', state.historial); }
+
+// Array shift helper — returns new array shifted left by n
+function rotateLeft(arr, n) {
+  if (!arr.length) return arr;
+  n = ((n % arr.length) + arr.length) % arr.length;
+  return [...arr.slice(n), ...arr.slice(0, n)];
+}
+
+// --- Rotation Logic ---
+function getEffectiveWeekIndex(historial, targetWeekStart) {
+  const target = formatDate(targetWeekStart);
+  let idx = 0;
+  const sorted = [...historial]
+    .filter(h => h.fechaInicioSemana < target && h.tipoReunion === 'Jueves')
+    .sort((a,b) => a.fechaInicioSemana.localeCompare(b.fechaInicioSemana));
+
+  const seen = new Set();
+  for (const h of sorted) {
+    if (!seen.has(h.fechaInicioSemana)) {
+      seen.add(h.fechaInicioSemana);
+      if (!h.esPausaAsamblea) idx++;
+    }
+  }
+  return idx;
+}
+
+function getRotationForWeek(grupos, encargados, effectiveIdx) {
+  const gActivos = grupos.filter(g => g.activo).sort((a,b) => a.orden - b.orden);
+  const eActivos = encargados.filter(e => e.activo).sort((a,b) => a.orden - b.orden);
+
+  let juevesPair = null, domingoPair = null, encargado = null;
+
+  if (gActivos.length >= 2) {
+    const rotated = rotateLeft(gActivos, effectiveIdx % gActivos.length);
+    juevesPair = [rotated[0], rotated[1]];
+    if (gActivos.length >= 4) {
+      domingoPair = [rotated[2], rotated[3]];
+    }
+  }
+
+  if (eActivos.length > 0) {
+    encargado = eActivos[effectiveIdx % eActivos.length];
+  }
+
+  return { juevesPair, domingoPair, encargado };
+}
+
+// --- Historial Generation ---
+function ensureWeeksGenerated() {
+  const grupos = state.grupos;
+  const encargados = state.encargados;
+  const historial = state.historial;
+
+  const monday = getMonday(new Date());
+  // We need weeks from 8 weeks ago to 12 weeks ahead
+  const start = addDays(monday, -8 * 7);
+  const end = addDays(monday, 12 * 7);
+
+  let changed = false;
+
+  // Auto-complete past weeks (reunions that have already happened)
+  for (const h of historial) {
+    if (h.completado) continue;
+    const meeting = addDays(parseDate(h.fechaInicioSemana), h.tipoReunion === 'Jueves' ? 3 : 6);
+    if (formatDate(meeting) < TODAY) {
+      h.completado = true;
+      changed = true;
+    }
+  }
+
+  // Walk through each week from start to end
+  let cursor = new Date(start);
+  while (cursor <= end) {
+    const weekStart = formatDate(cursor);
+
+    // Check if we already have entries for this week
+    const existingThu = historial.find(h => h.fechaInicioSemana === weekStart && h.tipoReunion === 'Jueves');
+    const existingSun = historial.find(h => h.fechaInicioSemana === weekStart && h.tipoReunion === 'Domingo');
+
+    if (!existingThu || !existingSun) {
+      // Need to generate
+      const effectiveIdx = getEffectiveWeekIndex(historial, cursor);
+
+      // Check if any entry for this week is marked as pause
+      const existingWeek = historial.filter(h => h.fechaInicioSemana === weekStart);
+      const isPause = existingWeek.length > 0 && existingWeek.some(h => h.esPausaAsamblea);
+
+      const rot = getRotationForWeek(grupos, encargados, effectiveIdx);
+
+      if (!existingThu) {
+        historial.push({
+          id: uid(),
+          fechaInicioSemana: weekStart,
+          tipoReunion: 'Jueves',
+          grupoAseo1: isPause ? null : (rot.juevesPair ? rot.juevesPair[0] : null),
+          grupoAseo2: isPause ? null : (rot.juevesPair ? rot.juevesPair[1] : null),
+          encargadoAV: isPause ? null : rot.encargado,
+          esPausaAsamblea: isPause,
+          completado: false
+        });
+        changed = true;
+      }
+
+      if (!existingSun) {
+        historial.push({
+          id: uid(),
+          fechaInicioSemana: weekStart,
+          tipoReunion: 'Domingo',
+          grupoAseo1: isPause ? null : (rot.domingoPair ? rot.domingoPair[0] : null),
+          grupoAseo2: isPause ? null : (rot.domingoPair ? rot.domingoPair[1] : null),
+          encargadoAV: isPause ? null : rot.encargado,
+          esPausaAsamblea: isPause,
+          completado: false
+        });
+        changed = true;
+      }
+    }
+
+    cursor = addDays(cursor, 7);
+  }
+
+  if (changed) {
+    saveHistorial();
+    // Re-fetch effective indices for weeks after regeneration to ensure consistency
+    // Actually, we need to RECALCULATE all generated weeks to ensure correct rotation
+    // because the effective index calculation depends on existing historial
+    // Let's do a second pass to fix assignments
+    fixAssignments();
+  }
+}
+
+function fixAssignments() {
+  const grupos = state.grupos;
+  const encargados = state.encargados;
+  const historial = state.historial;
+
+  // Only fix weeks from next Monday onward (preserve current and past)
+  const monday = getMonday(new Date());
+  const nextMon = addDays(monday, 7);
+  const nextStart = formatDate(nextMon);
+
+  const weeks = [...new Set(historial.map(h => h.fechaInicioSemana))]
+    .filter(w => w >= nextStart)
+    .sort();
+
+  let changed = false;
+
+  for (let wi = 0; wi < weeks.length; wi++) {
+    const weekStart = weeks[wi];
+    const thu = historial.find(h => h.fechaInicioSemana === weekStart && h.tipoReunion === 'Jueves');
+    const sun = historial.find(h => h.fechaInicioSemana === weekStart && h.tipoReunion === 'Domingo');
+    const isPause = thu?.esPausaAsamblea || sun?.esPausaAsamblea || false;
+
+    // Count non-pause weeks before this one (across ALL weeks, not just filtered)
+    let effectiveIdx = 0;
+    const allWeeks = [...new Set(historial.map(h => h.fechaInicioSemana))].sort();
+    for (const ws of allWeeks) {
+      if (ws >= weekStart) break;
+      const pw = historial.find(h => h.fechaInicioSemana === ws && h.tipoReunion === 'Jueves');
+      if (pw && !pw.esPausaAsamblea) effectiveIdx++;
+    }
+
+    const rot = getRotationForWeek(grupos, encargados, effectiveIdx);
+
+    if (thu) {
+      if (isPause) {
+        if (thu.grupoAseo1 !== null || thu.grupoAseo2 !== null || thu.encargadoAV !== null) {
+          thu.grupoAseo1 = null; thu.grupoAseo2 = null; thu.encargadoAV = null;
+          changed = true;
+        }
+      } else {
+        const g1 = rot.juevesPair ? rot.juevesPair[0] : null;
+        const g2 = rot.juevesPair ? rot.juevesPair[1] : null;
+        const av = rot.encargado;
+        if (thu.grupoAseo1?.id !== g1?.id || thu.grupoAseo2?.id !== g2?.id || thu.encargadoAV?.id !== av?.id) {
+          thu.grupoAseo1 = g1; thu.grupoAseo2 = g2; thu.encargadoAV = av;
+          changed = true;
+        }
+      }
+    }
+
+    if (sun) {
+      if (isPause) {
+        if (sun.grupoAseo1 !== null || sun.grupoAseo2 !== null || sun.encargadoAV !== null) {
+          sun.grupoAseo1 = null; sun.grupoAseo2 = null; sun.encargadoAV = null;
+          changed = true;
+        }
+      } else {
+        const g1 = rot.domingoPair ? rot.domingoPair[0] : null;
+        const g2 = rot.domingoPair ? rot.domingoPair[1] : null;
+        const av = rot.encargado;
+        if (sun.grupoAseo1?.id !== g1?.id || sun.grupoAseo2?.id !== g2?.id || sun.encargadoAV?.id !== av?.id) {
+          sun.grupoAseo1 = g1; sun.grupoAseo2 = g2; sun.encargadoAV = av;
+          changed = true;
+        }
+      }
+    }
+  }
+
+  if (changed) saveHistorial();
+}
+
+// --- Seed ---
+function seedData() {
+  const grupos = [];
+  for (let i = 1; i <= 10; i++) {
+    grupos.push({ id: uid(), nombre: `Grupo ${i}`, activo: true, orden: i });
+  }
+  state.grupos = grupos;
+  state.encargados = [];
+  state.historial = [];
+  saveGrupos();
+  saveEncargados();
+  saveHistorial();
+  LS.set('initialized', true);
+}
+
+// --- Auth ---
+async function setupAdmin(email, password) {
+  const hash = await hashStr(password);
+  LS.set('admin', { email, passwordHash: hash, name: email.split('@')[0] });
+  LS.set('initialized', true);
+  seedData();
+}
+
+async function checkLogin(email, password) {
+  const admin = LS.get('admin', null);
+  if (admin && admin.email === email) {
+    const hash = await hashStr(password);
+    if (hash === admin.passwordHash) return true;
+  }
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    if (res.ok) return true;
+  } catch {}
+  return false;
+}
+
+// --- Rendering ---
+function el(tag, attrs, ...children) {
+  const e = document.createElement(tag);
+  if (attrs) {
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === 'className') e.className = v;
+      else if (k.startsWith('on')) e.addEventListener(k.slice(2).toLowerCase(), v);
+      else if (k === 'htmlFor') e.setAttribute('for', v);
+      else if (k === 'style' && typeof v === 'object') {
+        for (const [sk, sv] of Object.entries(v)) e.style[sk] = sv;
+      }
+      else if (k === 'checked') e.checked = !!v;
+      else if (k === 'value') e.value = v;
+      else e.setAttribute(k, v);
+    }
+  }
+  for (const c of children) {
+    if (c == null) continue;
+    if (typeof c === 'string' || typeof c === 'number') e.appendChild(document.createTextNode(c));
+    else if (c instanceof Node) e.appendChild(c);
+  }
+  return e;
+}
+
+function render() {
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  app.className = 'fade-in';
+
+  const session = loadSession();
+  const initialized = LS.init();
+
+  if (!initialized) {
+    renderSetup(app);
+  } else if (!session) {
+    renderLogin(app);
+  } else {
+    loadData();
+    state.user = session;
+    ensureWeeksGenerated();
+    renderApp(app);
+  }
+}
+
+// --- Setup ---
+function renderSetup(container) {
+  container.innerHTML = `
+    <div class="login-screen">
+      <div class="login-card setup-card slide-up">
+        <div class="logo-lg">ROCO</div>
+        <div class="subtitle">Configuración inicial del sistema</div>
+        <form id="setup-form">
+          <div class="mb-4">
+            <label class="label" for="setup-email">Correo electrónico</label>
+            <input class="input" id="setup-email" type="email" placeholder="admin@ejemplo.com" required>
+          </div>
+          <div class="mb-4">
+            <label class="label" for="setup-pass">Contraseña</label>
+            <input class="input" id="setup-pass" type="password" placeholder="••••••••" required minlength="6">
+          </div>
+          <div class="mb-4">
+            <label class="label" for="setup-pass2">Confirmar contraseña</label>
+            <input class="input" id="setup-pass2" type="password" placeholder="••••••••" required minlength="6">
+          </div>
+          <div id="setup-error" class="error-msg"></div>
+          <button type="submit" class="btn btn-primary w-full mt-4">Iniciar ROCO</button>
+        </form>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('setup-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = document.getElementById('setup-email').value.trim();
+    const pass = document.getElementById('setup-pass').value;
+    const pass2 = document.getElementById('setup-pass2').value;
+    const err = document.getElementById('setup-error');
+
+    if (pass !== pass2) {
+      err.textContent = 'Las contraseñas no coinciden';
+      err.style.display = 'block';
+      return;
+    }
+    if (pass.length < 6) {
+      err.textContent = 'La contraseña debe tener al menos 6 caracteres';
+      err.style.display = 'block';
+      return;
+    }
+
+    await setupAdmin(email, pass);
+    state.user = { email, name: email.split('@')[0] };
+    saveSession(state.user);
+    render();
+  });
+}
+
+// --- Login ---
+function renderLogin(container) {
+  container.innerHTML = `
+    <div class="login-screen">
+      <div class="login-card slide-up">
+        <div class="logo-lg">ROCO</div>
+        <div class="subtitle">Roles de Congregación</div>
+        <form id="login-form">
+          <div class="mb-4">
+            <label class="label" for="login-email">Correo electrónico</label>
+            <input class="input" id="login-email" type="email" placeholder="admin@ejemplo.com" required>
+          </div>
+          <div class="mb-4">
+            <label class="label" for="login-pass">Contraseña</label>
+            <input class="input" id="login-pass" type="password" placeholder="••••••••" required>
+          </div>
+          <div id="login-error" class="error-msg"></div>
+          <button type="submit" class="btn btn-primary w-full mt-4">Entrar</button>
+        </form>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('login-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value.trim();
+    const pass = document.getElementById('login-pass').value;
+    const err = document.getElementById('login-error');
+
+    const ok = await checkLogin(email, pass);
+    if (!ok) {
+      err.textContent = 'Credenciales incorrectas';
+      err.style.display = 'block';
+      return;
+    }
+
+    state.user = { email, name: email.split('@')[0] };
+    saveSession(state.user);
+    render();
+  });
+}
+
+// --- App Shell ---
+function renderApp(container) {
+  const view = state.view || 'dashboard';
+
+  const header = el('header', { className: 'app-header' },
+    el('div', { className: 'flex items-center gap-4' },
+      el('a', { className: 'logo', href: '#', onClick: e => { e.preventDefault(); navigate('dashboard'); } }, 'ROCO'),
+      el('nav', {},
+        el('a', { href: '#', className: view === 'dashboard' ? 'active' : '', onClick: e => { e.preventDefault(); navigate('dashboard'); } }, 'Inicio'),
+        el('a', { href: '#', className: view === 'admin' ? 'active' : '', onClick: e => { e.preventDefault(); navigate('admin'); } }, 'Admin'),
+        el('a', { href: '#', className: view === 'historial' ? 'active' : '', onClick: e => { e.preventDefault(); navigate('historial'); } }, 'Historial')
+      )
+    ),
+    el('div', { className: 'user-info' },
+      el('span', {}, state.user?.name || ''),
+      el('button', { className: 'btn-logout', onClick: logout }, 'Salir')
+    )
+  );
+
+  const main = el('main', { className: 'main' });
+
+  if (view === 'dashboard') renderDashboard(main);
+  else if (view === 'admin') renderAdmin(main);
+  else if (view === 'historial') renderHistorial(main);
+
+  container.appendChild(header);
+  container.appendChild(main);
+}
+
+function navigate(view) {
+  state.view = view;
+  render();
+}
+
+function logout() {
+  clearSession();
+  state.view = 'login';
+  render();
+}
+
+// --- Dashboard ---
+function renderDashboard(container) {
+  const grupos = state.grupos;
+  const encargados = state.encargados;
+  const historial = state.historial;
+
+  if (grupos.length === 0) {
+    container.innerHTML = `<div class="card"><p class="text-muted">No hay datos. Agrega grupos y encargados desde el panel Admin.</p></div>`;
+    return;
+  }
+
+  const monday = getMonday(new Date());
+  const weekStart = formatDate(monday);
+
+  const thuActual = historial.find(h => h.fechaInicioSemana === weekStart && h.tipoReunion === 'Jueves');
+  const sunActual = historial.find(h => h.fechaInicioSemana === weekStart && h.tipoReunion === 'Domingo');
+
+  const nextMon = addDays(monday, 7);
+  const nextStart = formatDate(nextMon);
+  const thuNext = historial.find(h => h.fechaInicioSemana === nextStart && h.tipoReunion === 'Jueves');
+  const sunNext = historial.find(h => h.fechaInicioSemana === nextStart && h.tipoReunion === 'Domingo');
+
+  const isPauseThisWeek = thuActual?.esPausaAsamblea || sunActual?.esPausaAsamblea || false;
+  const isPauseNextWeek = thuNext?.esPausaAsamblea || sunNext?.esPausaAsamblea || false;
+
+  // Determine which day of week it is
+  const today = new Date();
+  const dayOfWeek = today.getDay(); // 0=Sun, 4=Thu
+  const isThursday = dayOfWeek === 4;
+  const isSunday = dayOfWeek === 0;
+
+  // --- Current Week Card ---
+  const currentCard = el('div', { className: `card card-highlight mb-6 slide-up` });
+
+  const curHeader = el('div', { className: 'flex items-center justify-between mb-4' },
+    el('span', { className: 'card-title' }, 'Semana Actual')
+  );
+
+  if (isPauseThisWeek) {
+    const pauseDiv = el('div', { className: 'pause-banner' },
+      el('svg', { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2 },
+        el('rect', { x: 6, y: 4, width: 4, height: 16, rx: 1 }),
+        el('rect', { x: 14, y: 4, width: 4, height: 16, rx: 1 })
+      ),
+      el('div', {},
+        el('div', { className: 'pause-text' }, 'Semana de Asamblea'),
+        el('div', { className: 'pause-sub' }, longDate(weekStart))
+      )
+    );
+    currentCard.appendChild(curHeader);
+    currentCard.appendChild(pauseDiv);
+  } else {
+    currentCard.appendChild(curHeader);
+
+    const weekLabel = el('div', { className: 'flex items-center gap-2 mb-4' },
+      el('span', { className: 'text-sm text-muted' }, `Semana del ${longDate(weekStart)}`),
+      (isThursday || isSunday) ? el('span', { className: 'badge badge-orange' }, 'HOY') : null
+    );
+    currentCard.appendChild(weekLabel);
+
+    // Thursday row
+    const thuDiv = renderMeetingRow('Jueves', thuActual, isThursday);
+    currentCard.appendChild(thuDiv);
+
+    // Sunday row
+    const sunDiv = renderMeetingRow('Domingo', sunActual, isSunday);
+    currentCard.appendChild(sunDiv);
+  }
+
+  container.appendChild(currentCard);
+
+  // --- Next Week Card ---
+  const nextCard = el('div', { className: 'card mb-6 slide-up' });
+  const nextHeader = el('div', { className: 'flex items-center justify-between mb-4' },
+    el('span', { className: 'card-title' }, 'Próxima Semana')
+  );
+  nextCard.appendChild(nextHeader);
+
+  if (isPauseNextWeek) {
+    const pauseDiv = el('div', { className: 'pause-banner' },
+      el('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2 },
+        el('rect', { x: 6, y: 4, width: 4, height: 16, rx: 1 }),
+        el('rect', { x: 14, y: 4, width: 4, height: 16, rx: 1 })
+      ),
+      el('div', { className: 'pause-text' }, 'Semana de Asamblea')
+    );
+    nextCard.appendChild(pauseDiv);
+  } else {
+    const weekLabel = el('div', { className: 'text-sm text-muted mb-4' }, `Semana del ${longDate(nextStart)}`);
+    nextCard.appendChild(weekLabel);
+
+    const thuDiv = renderMeetingRow('Jueves', thuNext, false);
+    nextCard.appendChild(thuDiv);
+
+    const sunDiv = renderMeetingRow('Domingo', sunNext, false);
+    nextCard.appendChild(sunDiv);
+  }
+
+  container.appendChild(nextCard);
+
+  // --- Calendar ---
+  const calCard = el('div', { className: 'card fade-in' });
+  const calHeader = el('div', { className: 'flex items-center justify-between mb-4' },
+    el('span', { className: 'card-title' }, 'Calendario de Roles')
+  );
+  calCard.appendChild(calHeader);
+
+  // Show next 8 weeks (or past 2 + next 6)
+  const calStart = addDays(monday, -2 * 7);
+  const calEnd = addDays(monday, 6 * 7);
+
+  const weekList = el('div', { className: 'week-grid' });
+
+  let cursor = new Date(calStart);
+  while (cursor <= calEnd) {
+    const ws = formatDate(cursor);
+    const thu = historial.find(h => h.fechaInicioSemana === ws && h.tipoReunion === 'Jueves');
+    const sun = historial.find(h => h.fechaInicioSemana === ws && h.tipoReunion === 'Domingo');
+    const isPause = thu?.esPausaAsamblea || sun?.esPausaAsamblea || false;
+    const isCurrent = ws === weekStart;
+    const isPast = ws < weekStart;
+
+    const row = el('div', { className: `week-row ${isPause ? 'paused' : ''} ${isCurrent ? 'week-today' : ''} ${isPast && !isCurrent ? 'completed' : ''}` });
+
+    if (isPause) {
+      row.appendChild(el('div', { className: 'week-date' }, shortDate(ws)));
+      row.appendChild(el('div', { className: 'week-day' }, ''));
+      row.appendChild(el('div', { className: 'week-assignment' },
+        el('span', { className: 'text-muted' }, 'Semana de Asamblea')
+      ));
+      row.appendChild(el('div', { className: 'week-check' }, ''));
+    } else {
+      const label = el('div', { className: 'week-date' },
+        shortDate(ws),
+        isCurrent ? el('span', { className: 'badge-today ml-2' }, 'Actual') : null
+      );
+      row.appendChild(label);
+
+      const daysCol = el('div', {}, '');
+
+      if (thu) {
+        const thuText = thu.encargadoAV
+          ? `${thu.grupoAseo1?.nombre || '?'} y ${thu.grupoAseo2?.nombre || '?'} · AV: ${thu.encargadoAV.nombre}`
+          : `${thu.grupoAseo1?.nombre || '?'} y ${thu.grupoAseo2?.nombre || '?'}`;
+        daysCol.appendChild(el('div', { className: 'text-sm' },
+          el('strong', {}, 'Jueves '),
+          el('span', {}, thu.completado ? '✓ ' : ''),
+          el('span', {}, thuText)
+        ));
+      }
+
+      if (sun) {
+        const sunText = sun.encargadoAV
+          ? `${sun.grupoAseo1?.nombre || '?'} y ${sun.grupoAseo2?.nombre || '?'} · AV: ${sun.encargadoAV.nombre}`
+          : `${sun.grupoAseo1?.nombre || '?'} y ${sun.grupoAseo2?.nombre || '?'}`;
+        daysCol.appendChild(el('div', { className: 'text-sm' },
+          el('strong', {}, 'Domingo '),
+          el('span', {}, sun.completado ? '✓ ' : ''),
+          el('span', {}, sunText)
+        ));
+      }
+
+      row.appendChild(daysCol);
+      row.appendChild(el('div', { className: 'week-check' },
+        thu?.completado && sun?.completado ? '✓' : ''
+      ));
+    }
+
+    weekList.appendChild(row);
+    cursor = addDays(cursor, 7);
+  }
+
+  calCard.appendChild(weekList);
+  container.appendChild(calCard);
+}
+
+function renderMeetingRow(day, entry, isToday) {
+  const row = el('div', { className: `flex items-center gap-3 py-2 ${isToday ? 'today-highlight' : ''}` });
+  const isPause = entry?.esPausaAsamblea || false;
+
+  const dayLabel = el('div', { className: 'flex items-center gap-2', style: 'min-width: 100px' },
+    el('span', { className: 'badge ' + (isToday ? 'badge-blue' : 'badge-gray') }, day),
+    isToday ? el('span', { className: 'badge badge-orange' }, 'Hoy') : null
+  );
+  row.appendChild(dayLabel);
+
+  if (isPause) {
+    row.appendChild(el('span', { className: 'text-muted' }, '—'));
+  } else if (entry) {
+    const parts = [];
+    if (entry.grupoAseo1 && entry.grupoAseo2) {
+      parts.push(`Aseo: ${entry.grupoAseo1.nombre} y ${entry.grupoAseo2.nombre}`);
+    }
+    if (entry.encargadoAV) {
+      parts.push(`AV: ${entry.encargadoAV.nombre}`);
+    }
+    row.appendChild(el('span', {}, parts.join(' · ') || 'Sin asignación'));
+    if (entry.completado) {
+      row.appendChild(el('span', { className: 'week-check', style: 'margin-left: auto' }, '✓'));
+    }
+  } else {
+    row.appendChild(el('span', { className: 'text-muted' }, 'Sin datos'));
+  }
+
+  return row;
+}
+
+// --- Admin ---
+function renderAdmin(container) {
+  const tab = state.tab || 'grupos';
+
+  const tabNav = el('div', { className: 'tab-nav' },
+    el('button', {
+      className: tab === 'grupos' ? 'active' : '',
+      onClick: () => { state.tab = 'grupos'; render(); }
+    }, 'Grupos de Aseo'),
+    el('button', {
+      className: tab === 'av' ? 'active' : '',
+      onClick: () => { state.tab = 'av'; render(); }
+    }, 'Audio y Video'),
+    el('button', {
+      className: tab === 'pausa' ? 'active' : '',
+      onClick: () => { state.tab = 'pausa'; render(); }
+    }, 'Pausa por Asamblea')
+  );
+  container.appendChild(tabNav);
+
+  if (tab === 'grupos') renderGruposAdmin(container);
+  else if (tab === 'av') renderAVAdmin(container);
+  else if (tab === 'pausa') renderPausaAdmin(container);
+}
+
+function renderGruposAdmin(container) {
+  const grupos = state.grupos.sort((a,b) => a.orden - b.orden);
+
+  const header = el('div', { className: 'flex items-center justify-between mb-4' },
+    el('h2', { className: 'font-semibold' }, 'Grupos de Aseo'),
+    el('button', { className: 'btn btn-primary btn-sm', onClick: addGrupo }, '+ Nuevo Grupo')
+  );
+  container.appendChild(header);
+
+  if (grupos.length === 0) {
+    container.appendChild(el('p', { className: 'text-muted text-sm' }, 'No hay grupos registrados.'));
+    return;
+  }
+
+  const table = el('table', {},
+    el('thead', {},
+      el('tr', {},
+        el('th', {}, 'Orden'),
+        el('th', {}, 'Nombre'),
+        el('th', {}, 'Activo'),
+        el('th', {}, '')
+      )
+    ),
+    el('tbody', {})
+  );
+
+  for (const g of grupos) {
+    const tr = el('tr', {});
+    tr.appendChild(el('td', {}, g.orden?.toString() || ''));
+    tr.appendChild(el('td', {},
+      el('input', {
+        className: 'input', style: 'padding: 4px 8px; font-size: 14px; max-width: 200px',
+        value: g.nombre, 'data-id': g.id,
+        onInput: e => updateGrupo(g.id, 'nombre', e.target.value)
+      })
+    ));
+    const tdToggle = el('td', {},
+      el('label', { className: 'toggle' },
+        el('input', {
+          type: 'checkbox', checked: g.activo,
+          onChange: e => updateGrupo(g.id, 'activo', e.target.checked)
+        }),
+        el('span', { className: 'slider' })
+      )
+    );
+    tr.appendChild(tdToggle);
+    tr.appendChild(el('td', {},
+      el('button', { className: 'btn btn-danger btn-sm', onClick: () => deleteGrupo(g.id) }, 'Eliminar')
+    ));
+    table.querySelector('tbody').appendChild(tr);
+  }
+
+  container.appendChild(table);
+}
+
+function renderAVAdmin(container) {
+  const encargados = state.encargados.sort((a,b) => a.orden - b.orden);
+
+  const header = el('div', { className: 'flex items-center justify-between mb-4' },
+    el('h2', { className: 'font-semibold' }, 'Encargados de Audio y Video'),
+    el('button', { className: 'btn btn-primary btn-sm', onClick: addEncargado }, '+ Nuevo Encargado')
+  );
+  container.appendChild(header);
+
+  if (encargados.length === 0) {
+    container.appendChild(el('p', { className: 'text-muted text-sm' }, 'No hay encargados registrados.'));
+    return;
+  }
+
+  const table = el('table', {},
+    el('thead', {},
+      el('tr', {},
+        el('th', {}, 'Orden'),
+        el('th', {}, 'Nombre'),
+        el('th', {}, 'Activo'),
+        el('th', {}, '')
+      )
+    ),
+    el('tbody', {})
+  );
+
+  for (const e of encargados) {
+    const tr = el('tr', {});
+    tr.appendChild(el('td', {}, e.orden?.toString() || ''));
+    tr.appendChild(el('td', {},
+      el('input', {
+        className: 'input', style: 'padding: 4px 8px; font-size: 14px; max-width: 250px',
+        value: e.nombre, 'data-id': e.id,
+        onInput: ev => updateEncargado(e.id, 'nombre', ev.target.value)
+      })
+    ));
+    const tdToggle = el('td', {},
+      el('label', { className: 'toggle' },
+        el('input', {
+          type: 'checkbox', checked: e.activo,
+          onChange: ev => updateEncargado(e.id, 'activo', ev.target.checked)
+        }),
+        el('span', { className: 'slider' })
+      )
+    );
+    tr.appendChild(tdToggle);
+    tr.appendChild(el('td', {},
+      el('button', { className: 'btn btn-danger btn-sm', onClick: () => deleteEncargado(e.id) }, 'Eliminar')
+    ));
+    table.querySelector('tbody').appendChild(tr);
+  }
+
+  container.appendChild(table);
+}
+
+function renderPausaAdmin(container) {
+  const monday = getMonday(new Date());
+  const weeks = [];
+  for (let i = -8; i <= 16; i++) {
+    const d = addDays(monday, i * 7);
+    weeks.push({ start: formatDate(d), label: `Semana del ${shortDate(formatDate(d))}` });
+  }
+
+  const header = el('div', { className: 'flex items-center justify-between mb-4' },
+    el('h2', { className: 'font-semibold' }, 'Pausa por Asamblea')
+  );
+  container.appendChild(header);
+
+  const desc = el('p', { className: 'text-sm text-muted mb-4' },
+    'Selecciona una semana para marcarla como "Semana de Asamblea". Durante esa semana no se asignarán roles y la rotación se reanudará la semana siguiente.'
+  );
+  container.appendChild(desc);
+
+  const list = el('div', { className: 'week-grid' });
+
+  for (const w of weeks) {
+    const thu = state.historial.find(h => h.fechaInicioSemana === w.start && h.tipoReunion === 'Jueves');
+    const isPause = thu?.esPausaAsamblea || false;
+
+    const row = el('div', { className: `week-row ${isPause ? 'paused' : ''}` });
+    row.appendChild(el('div', { className: 'week-date' }, w.label));
+
+    const toggleCell = el('div', { className: 'flex items-center gap-2' },
+      el('label', { className: 'toggle' },
+        el('input', {
+          type: 'checkbox', checked: isPause,
+          onChange: () => togglePausa(w.start, !isPause)
+        }),
+        el('span', { className: 'slider' })
+      ),
+      el('span', { className: isPause ? 'badge badge-gray' : 'badge badge-gray', style: isPause ? '' : 'opacity: 0' },
+        isPause ? 'Asamblea' : 'Activa'
+      )
+    );
+    row.appendChild(toggleCell);
+    list.appendChild(row);
+  }
+
+  container.appendChild(list);
+}
+
+// --- Admin CRUD ---
+function addGrupo() {
+  const grupos = state.grupos;
+  const maxOrden = grupos.reduce((m, g) => Math.max(m, g.orden || 0), 0);
+  grupos.push({
+    id: uid(),
+    nombre: `Grupo ${grupos.length + 1}`,
+    activo: true,
+    orden: maxOrden + 1
+  });
+  saveGrupos();
+  // Regenerate affected weeks
+  regenerateFutureWeeks();
+  render();
+}
+
+function updateGrupo(id, field, value) {
+  const g = state.grupos.find(x => x.id === id);
+  if (!g) return;
+  g[field] = value;
+  saveGrupos();
+  regenerateFutureWeeks();
+}
+
+function deleteGrupo(id) {
+  if (!confirm('¿Eliminar este grupo? (borrado lógico)')) return;
+  const g = state.grupos.find(x => x.id === id);
+  if (g) {
+    g.activo = false;
+    saveGrupos();
+    regenerateFutureWeeks();
+    render();
+  }
+}
+
+function addEncargado() {
+  const list = state.encargados;
+  const maxOrden = list.reduce((m, e) => Math.max(m, e.orden || 0), 0);
+  list.push({
+    id: uid(),
+    nombre: 'Nuevo encargado',
+    activo: true,
+    orden: maxOrden + 1
+  });
+  saveEncargados();
+  regenerateFutureWeeks();
+  render();
+}
+
+function updateEncargado(id, field, value) {
+  const e = state.encargados.find(x => x.id === id);
+  if (!e) return;
+  e[field] = value;
+  saveEncargados();
+  regenerateFutureWeeks();
+}
+
+function deleteEncargado(id) {
+  if (!confirm('¿Eliminar este encargado? (borrado lógico)')) return;
+  const e = state.encargados.find(x => x.id === id);
+  if (e) {
+    e.activo = false;
+    saveEncargados();
+    regenerateFutureWeeks();
+    render();
+  }
+}
+
+function togglePausa(weekStart, paused) {
+  let thu = state.historial.find(h => h.fechaInicioSemana === weekStart && h.tipoReunion === 'Jueves');
+  let sun = state.historial.find(h => h.fechaInicioSemana === weekStart && h.tipoReunion === 'Domingo');
+
+  if (thu) {
+    thu.esPausaAsamblea = paused;
+    if (paused) { thu.grupoAseo1 = null; thu.grupoAseo2 = null; thu.encargadoAV = null; }
+  }
+  if (sun) {
+    sun.esPausaAsamblea = paused;
+    if (paused) { sun.grupoAseo1 = null; sun.grupoAseo2 = null; sun.encargadoAV = null; }
+  }
+
+  if (!thu) {
+    thu = { id: uid(), fechaInicioSemana: weekStart, tipoReunion: 'Jueves', grupoAseo1: null, grupoAseo2: null, encargadoAV: null, esPausaAsamblea: paused, completado: false };
+    state.historial.push(thu);
+  }
+  if (!sun) {
+    sun = { id: uid(), fechaInicioSemana: weekStart, tipoReunion: 'Domingo', grupoAseo1: null, grupoAseo2: null, encargadoAV: null, esPausaAsamblea: paused, completado: false };
+    state.historial.push(sun);
+  }
+
+  saveHistorial();
+
+  // Regenerate weeks AFTER the current week (preserve current week's pause status)
+  const monday = getMonday(new Date());
+  const nextMon = addDays(monday, 7);
+  const nextStart = formatDate(nextMon);
+  state.historial = state.historial.filter(h => h.fechaInicioSemana < nextStart);
+  saveHistorial();
+  ensureWeeksGenerated();
+  render();
+}
+
+function regenerateFutureWeeks() {
+  // Preserve current and past weeks, clear only strictly future weeks
+  const monday = getMonday(new Date());
+  const nextMon = addDays(monday, 7);
+  const nextStart = formatDate(nextMon);
+
+  state.historial = state.historial.filter(h => h.fechaInicioSemana < nextStart);
+  saveHistorial();
+  ensureWeeksGenerated();
+}
+
+// --- History ---
+function renderHistorial(container) {
+  const historial = state.historial;
+
+  const header = el('div', { className: 'flex items-center justify-between mb-4' },
+    el('h2', { className: 'font-semibold' }, 'Historial de Roles')
+  );
+  container.appendChild(header);
+
+  // Get unique weeks sorted descending
+  const weeks = [...new Set(historial.map(h => h.fechaInicioSemana))]
+    .sort()
+    .reverse()
+    .filter(w => w < formatDate(getMonday(new Date()))); // Only past weeks
+
+  if (weeks.length === 0) {
+    container.appendChild(el('p', { className: 'text-muted text-sm' }, 'No hay historial disponible.'));
+    return;
+  }
+
+  const list = el('div', { className: 'week-grid' });
+
+  for (const ws of weeks) {
+    const thu = historial.find(h => h.fechaInicioSemana === ws && h.tipoReunion === 'Jueves');
+    const sun = historial.find(h => h.fechaInicioSemana === ws && h.tipoReunion === 'Domingo');
+    const isPause = thu?.esPausaAsamblea || sun?.esPausaAsamblea || false;
+
+    const row = el('div', { className: `week-row ${isPause ? 'paused' : ''} ${thu?.completado && sun?.completado ? 'completed' : ''}` });
+
+    if (isPause) {
+      row.appendChild(el('div', { className: 'week-date' }, shortDate(ws)));
+      row.appendChild(el('div', { className: 'week-assignment' },
+        el('span', { className: 'text-muted' }, 'Semana de Asamblea')
+      ));
+      row.appendChild(el('div', { className: 'week-check' }, ''));
+    } else {
+      row.appendChild(el('div', { className: 'week-date' }, shortDate(ws)));
+
+      const info = el('div', {}, '');
+      if (thu) {
+        const t = thu.encargadoAV
+          ? `Jue: ${thu.grupoAseo1?.nombre || '?'} y ${thu.grupoAseo2?.nombre || '?'} · AV: ${thu.encargadoAV.nombre}`
+          : `Jue: ${thu.grupoAseo1?.nombre || '?'} y ${thu.grupoAseo2?.nombre || '?'}`;
+        info.appendChild(el('div', { className: 'text-sm' },
+          t,
+          thu.completado ? el('span', { className: 'badge badge-green ml-2' }, '✓') : null
+        ));
+      }
+      if (sun) {
+        const s = sun.encargadoAV
+          ? `Dom: ${sun.grupoAseo1?.nombre || '?'} y ${sun.grupoAseo2?.nombre || '?'} · AV: ${sun.encargadoAV.nombre}`
+          : `Dom: ${sun.grupoAseo1?.nombre || '?'} y ${sun.grupoAseo2?.nombre || '?'}`;
+        info.appendChild(el('div', { className: 'text-sm' },
+          s,
+          sun.completado ? el('span', { className: 'badge badge-green ml-2' }, '✓') : null
+        ));
+      }
+
+      row.appendChild(info);
+      row.appendChild(el('div', { className: 'week-check' },
+        thu?.completado && sun?.completado ? '✓' : ''
+      ));
+    }
+
+    list.appendChild(row);
+  }
+
+  container.appendChild(list);
+}
+
+// --- Init ---
+render();
+</script>
+</body>
+</html>
